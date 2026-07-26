@@ -26,23 +26,16 @@
         </div>
     </header>
 
-    <!-- TRANG CHỦ: Danh sách đề thi -->
+    <!-- TRANG CHỦ: TỰ ĐỘNG HIỆN TẤT CẢ CÁC ĐỀ THI -->
     <main id="homeView" class="max-w-5xl mx-auto w-full px-4 py-10 flex-grow">
         <div class="text-center mb-10">
             <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Danh Sách Đề Thi TOEIC Listening</h1>
             <p class="text-gray-500 text-sm">Chọn đề thi để bắt đầu làm bài trực tuyến</p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Thẻ bài thi Test 01 -->
-            <div onclick="openExam('TOEIC_NGHE_DOC', 'PART1_TEST_01')" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md border border-gray-200 cursor-pointer transition-all hover:border-blue-500">
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
-                    <i class="fa-solid fa-headphones"></i>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">TOEIC Part 1 - Đề 01</h3>
-                <p class="text-gray-500 text-xs mb-4">Mô tả hình ảnh (10 câu hỏi Listening)</p>
-                <span class="text-blue-600 font-bold text-xs">Vào làm bài &rarr;</span>
-            </div>
+        <!-- Khung danh sách đề (Được tự động tải từ Supabase) -->
+        <div id="examsListContainer" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="text-center text-gray-500 col-span-full py-10">Đang lấy danh sách đề thi từ Supabase...</p>
         </div>
     </main>
 
@@ -73,14 +66,60 @@
 
         let currentQuestionsData = [];
 
+        // Tự động tải danh sách Đề Thi khi vừa mở trang Web
+        window.addEventListener('DOMContentLoaded', fetchAllExams);
+
+        async function fetchAllExams() {
+            // Lấy danh sách các exam_id duy nhất từ database
+            const { data, error } = await _supabase
+                .from('exam_questions')
+                .select('course_code, exam_id')
+                .order('exam_id', { ascending: true });
+
+            if (error || !data || data.length === 0) {
+                document.getElementById('examsListContainer').innerHTML = `<p class="text-center text-red-500 col-span-full">Không thể lấy dữ liệu đề thi!</p>`;
+                return;
+            }
+
+            // Lọc các mã đề không bị trùng
+            const uniqueExams = [];
+            const map = new Map();
+            for (const item of data) {
+                if(!map.has(item.exam_id)){
+                    map.set(item.exam_id, true);
+                    uniqueExams.push(item);
+                }
+            }
+
+            // Render từng ô Đề thi ra trang chủ
+            let html = '';
+            uniqueExams.forEach(item => {
+                const testNum = item.exam_id.replace('PART1_TEST_', '');
+                html += `
+                    <div onclick="openExam('${item.course_code}', '${item.exam_id}')" class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md border border-gray-200 cursor-pointer transition-all hover:border-blue-500">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-headphones"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-1">TOEIC Part 1 - Đề ${testNum}</h3>
+                        <p class="text-gray-500 text-xs mb-4">Mô tả hình ảnh (10 câu hỏi Listening)</p>
+                        <span class="text-blue-600 font-bold text-xs">Vào làm bài &rarr;</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('examsListContainer').innerHTML = html;
+        }
+
         function showHome() {
             document.getElementById('homeView').classList.remove('hidden');
             document.getElementById('examView').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function openExam(courseCode, examId) {
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('examView').classList.remove('hidden');
+            document.getElementById('scoreBox').classList.add('hidden');
             document.getElementById('examTitle').innerText = `Bài Thi: ${examId}`;
             document.getElementById('questionsContainer').innerHTML = `<p class="text-center text-gray-500 py-10">Đang tải câu hỏi từ Supabase...</p>`;
 
