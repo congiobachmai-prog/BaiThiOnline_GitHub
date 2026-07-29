@@ -238,12 +238,13 @@
     <!-- Header Apple Liquid Navbar -->
     <div class="liquid-nav-container">
         <nav class="liquid-nav">
-            <a href="index.html" class="nav-btn active">
-                <i class="fa-solid fa-graduation-cap" style="color:var(--primary);"></i>
-                <span>TaiLieuHub</span>
+            <!-- NÚT ĐIỀU HƯỚNG QUAY VỀ TRANG CHỦ TÀI LIỆU -->
+            <a href="https://congiobachmai-prog.github.io/TaiLieuHub2026/index.html" class="nav-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white !important;">
+                <i class="fa-solid fa-house"></i>
+                <span>Trang Chủ Tài Liệu</span>
             </a>
 
-            <a href="#categories" class="nav-btn">
+            <a href="#categories" class="nav-btn active">
                 <i class="fa-solid fa-list-check"></i>
                 <span>Khóa Thi Trắc Nghiệm</span>
             </a>
@@ -529,9 +530,7 @@
             msg.style.color = "var(--primary)";
             msg.innerText = "Đang kiểm tra...";
 
-            // CẤP MÃ PHIÊN DUY NHẤT CHO MÁY NÀY
             const newDeviceSessionId = 'SESSION_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-
             const callbackName = 'handleAuth_' + Date.now();
 
             window[callbackName] = function(result) {
