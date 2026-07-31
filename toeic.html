@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hệ Thống Thi Online - TaiLieuHub</title>
     <!-- FontAwesome & Tailwind CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,17 +14,16 @@
             background-color: #f8fafc; 
             font-family: system-ui, -apple-system, sans-serif; 
             user-select: none; 
-            -webkit-user-select: none; 
-            -moz-user-select: none;
-            -ms-user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
-        /* WATERMARK BẢO MẬT BẢN QUYỀN TAILIEUHUB CHỐNG CHỤP/QUAY MÀN HÌNH */
+        /* WATERMARK BẢO MẬT BẢO VỆ BẢN QUYỀN TAILIEUHUB */
         #watermark-container {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none; z-index: 9999; overflow: hidden;
             display: flex; flex-wrap: wrap; justify-content: space-around; align-content: space-around;
-            opacity: 0.07;
+            opacity: 0.06;
         }
         .watermark-item {
             font-size: 15px; font-weight: 800; color: #000;
@@ -47,7 +46,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- LỚP WATERMARK BẢO MẬT BẢN QUYỀN TAILIEUHUB -->
+    <!-- LỚP WATERMARK BẢO MẬT -->
     <div id="watermark-container"></div>
 
     <!-- Header Navigation -->
@@ -80,7 +79,6 @@
             </div>
 
             <div id="examsListContainer" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <!-- DANH SÁCH CÁC TAB FILTER (GỒM TẤT CẢ 7 PART VÀ TAB CHUYÊN ĐỀ NGỮ PHÁP) -->
                 <div class="flex flex-wrap gap-2 pb-4 border-b border-gray-100">
                     <button type="button" onclick="switchPartTab('ALL')" id="tab_ALL" class="part-tab-btn active px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600">Tất Cả Bài Thi</button>
                     <button type="button" onclick="switchPartTab('PART1')" id="tab_PART1" class="part-tab-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 text-gray-600">Part 1</button>
@@ -102,7 +100,7 @@
             <!-- CỘT BÊN TRÁI: NỘI DUNG CÂU HỎI & ĐOẠN VĂN -->
             <div class="lg:col-span-2 space-y-4">
                 
-                <!-- Thanh Audio Cố Định (Dành cho Part 1, 2, 3, 4) -->
+                <!-- Thanh Audio Cố Định -->
                 <div id="audioStickyBox" class="hidden sticky top-16 z-30 bg-blue-50 border border-blue-200 rounded-2xl p-4 shadow-md backdrop-blur-md">
                     <div class="flex items-center justify-between mb-2">
                         <span id="audioTitleDisplay" class="font-bold text-blue-900 text-sm flex items-center gap-2"></span>
@@ -110,7 +108,7 @@
                     <audio id="globalAudioPlayer" controls class="w-full rounded-lg"></audio>
                 </div>
 
-                <!-- Khung Hiển Thị Đoạn Văn Bài Đọc (Dành Cho Part 6 & Part 7) -->
+                <!-- Khung Hiển Thị Đoạn Văn Bài Đọc (Part 6 & Part 7) -->
                 <div id="passageBox" class="hidden bg-slate-800 text-white rounded-2xl p-6 shadow-sm border border-slate-700 leading-relaxed font-sans text-sm max-h-96 overflow-y-auto">
                     <h4 class="font-bold text-blue-400 mb-3 flex items-center gap-2 border-b border-slate-700 pb-2">
                         <i class="fa-solid fa-file-lines"></i> Đoạn Văn Bài Đọc / Ngữ Cảnh:
@@ -118,47 +116,16 @@
                     <div id="passageContent"></div>
                 </div>
 
-                <!-- Khung Câu Hỏi Chính -->
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 relative">
-                    <div class="flex justify-between items-center mb-4">
-                        <span id="currentQuestionNumDisplay" class="font-black text-xl text-blue-600">Câu 1</span>
-                        <button type="button" onclick="toggleFlagCurrentQuestion()" id="flagBtn" class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-yellow-600 bg-gray-100 hover:bg-yellow-50 px-3 py-1.5 rounded-lg transition-all border">
-                            <i class="fa-solid fa-bookmark"></i> <span id="flagBtnText">Đánh dấu</span>
-                        </button>
-                    </div>
+                <!-- KHUNG CHỨA CÁC CÂU HỎI TRONG TRANG -->
+                <div id="questionsGroupContainer" class="space-y-4"></div>
 
-                    <!-- Text câu hỏi -->
-                    <p id="questionTextNotice" class="text-base font-semibold text-gray-800 mb-4 hidden"></p>
-
-                    <!-- Khung Ảnh Part 1 -->
-                    <div id="questionImgBox" class="mb-4 text-center hidden">
-                        <img id="questionImg" src="" class="max-w-full max-h-80 rounded-xl border mx-auto shadow-sm pointer-events-none" alt="Bức tranh Part 1">
-                    </div>
-
-                    <!-- Thông báo Part 2 chuẩn ETS -->
-                    <div id="part2Notice" class="hidden text-gray-500 italic text-sm mb-4 bg-gray-50 p-3 rounded-xl border text-center font-medium">
-                        Mark your answer on your answer sheet (Nghe câu hỏi & chọn đáp án A, B hoặc C)
-                    </div>
-
-                    <!-- Danh sách Đáp Án Trắc Nghiệm -->
-                    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6"></div>
-
-                    <!-- Khung Giải Thích & Transcript Chi Tiết (Nổi lên sau khi Nộp bài) -->
-                    <div id="explanationBox" class="mt-6 p-4 rounded-xl hidden border bg-blue-50/80 border-blue-200 shadow-inner">
-                        <p class="font-bold mb-2 text-blue-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-circle-info text-blue-600"></i> Transcript & Giải Thích Chi Tiết (TaiLieuHub):
-                        </p>
-                        <div id="expContent" class="text-sm text-gray-800 leading-relaxed font-medium"></div>
-                    </div>
-                </div>
-
-                <!-- Thanh Nút Bấm Chuyển Câu -->
+                <!-- Thanh Nút Bấm Chuyển Nhóm Câu -->
                 <div class="flex justify-between items-center bg-white p-4 rounded-2xl border shadow-sm">
                     <button type="button" onclick="prevQuestion()" id="prevBtn" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-sm transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-chevron-left"></i> Câu trước
+                        <i class="fa-solid fa-chevron-left"></i> Trang trước
                     </button>
                     <button type="button" onclick="nextQuestion()" id="nextBtn" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center gap-2">
-                        Câu tiếp <i class="fa-solid fa-chevron-right"></i>
+                        Trang tiếp <i class="fa-solid fa-chevron-right"></i>
                     </button>
                 </div>
 
@@ -187,12 +154,12 @@
                         <h3 class="font-bold text-gray-800 text-sm">Danh sách câu hỏi</h3>
                         <div id="filterReviewButtons" class="hidden flex gap-1">
                             <button onclick="setPaletteFilter('ALL')" id="f_ALL" class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-600 text-white">Tất cả</button>
-                            <button onclick="setPaletteFilter('WRONG')" id="f_WRONG" class="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-600">Sai</button>
+                            <button onclick="setPaletteFilter('WRONG')" id="f_WRONG" class="text-[10px] font-bold px-2 py-0.5 rounded bg-red-600 text-white">Sai</button>
                         </div>
                     </div>
 
                     <div id="paletteLegend" class="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-4 pb-3 border-b">
-                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span> Hiện tại</div>
+                        <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span> Đang xem</div>
                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-red-600 inline-block"></span> Đã chọn</div>
                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span> Đánh dấu</div>
                         <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gray-200 inline-block"></span> Chưa chọn</div>
@@ -232,9 +199,10 @@
         let timeRemaining = 0;
         let isSubmitted = false;
         let currentPaletteFilter = 'ALL';
+        let currentExamId = '';
 
         document.addEventListener("DOMContentLoaded", () => {
-            // enableAntiCheat();
+            enableAntiCheat();
             verifyUserPermission();
         });
 
@@ -291,62 +259,88 @@
             return [];
         }
 
-        // HÀM LẤY TOÀN BỘ ĐỀ THI KHÔNG BỊ TRÚNG HẠN CHẾ LIMIT
         async function fetchAllExams() {
-    document.getElementById('listLoader').classList.remove('hidden');
-    
-    let allData = [];
-    let page = 0;
-    const pageSize = 1000; // Mỗi lần lấy 1000 dòng
-    let hasMore = true;
+            document.getElementById('listLoader').classList.remove('hidden');
+            
+            let allData = [];
+            let page = 0;
+            const pageSize = 1000;
+            let hasMore = true;
 
-    // Vòng lặp lấy bằng sạch toàn bộ các dòng trong Database
-    while (hasMore) {
-        const { data, error } = await _supabase
-            .from('exam_questions')
-            .select('course_code, exam_id')
-            .range(page * pageSize, (page + 1) * pageSize - 1);
+            while (hasMore) {
+                const { data, error } = await _supabase
+                    .from('exam_questions')
+                    .select('course_code, exam_id')
+                    .range(page * pageSize, (page + 1) * pageSize - 1);
 
-        if (error || !data) {
-            console.error("Lỗi lấy dữ liệu:", error);
-            break;
+                if (error || !data) {
+                    console.error("Lỗi lấy dữ liệu:", error);
+                    break;
+                }
+
+                allData = allData.concat(data);
+                if (data.length < pageSize) hasMore = false;
+                else page++;
+            }
+
+            const uniqueExams = [];
+            const map = new Map();
+            
+            for (const item of allData) {
+                if (item.exam_id && !map.has(item.exam_id)) {
+                    map.set(item.exam_id, true);
+                    uniqueExams.push({
+                        course_code: item.course_code,
+                        exam_id: item.exam_id
+                    });
+                }
+            }
+
+            uniqueExams.sort((a, b) => a.exam_id.localeCompare(b.exam_id, undefined, { numeric: true, sensitivity: 'base' }));
+
+            allExamsList = uniqueExams;
+
+            document.getElementById('examsListContainer').classList.remove('hidden');
+            document.getElementById('listLoader').classList.add('hidden');
+            
+            switchPartTab('ALL');
         }
 
-        allData = allData.concat(data);
+        /* HÀM VIỆT HÓA VÀ CHUẨN HÓA TIÊU ĐỀ CHUYÊN ĐỀ NGỮ PHÁP TIẾNG VIỆT */
+        function formatExamTitle(examId) {
+            const matchPart = examId.match(/PART(\d+)_TEST_(\d+)/i);
+            if (matchPart) {
+                return {
+                    title: `TOEIC Part ${matchPart[1]} - Đề ${matchPart[2]}`,
+                    badge: `P${matchPart[1]}`
+                };
+            }
 
-        if (data.length < pageSize) {
-            hasMore = false; // Đã lấy hết sạch dữ liệu trong DB
-        } else {
-            page++;
+            let clean = examId.toUpperCase();
+            let testNum = '';
+            
+            const numMatch = clean.match(/(\d+)$/);
+            if (numMatch) {
+                testNum = numMatch[1].padStart(2, '0');
+            }
+
+            let topicName = "Ngữ Pháp TỔNG HỢP";
+            
+            if (clean.includes('ADJ_ADV') || clean.includes('ADJECTIVE')) topicName = "Tính Từ & Trạng Từ";
+            else if (clean.includes('AGREEMENT')) topicName = "Sự Hòa Hợp Chủ - Động Từ";
+            else if (clean.includes('CONDITION')) topicName = "Câu Điều Kiện & So Sánh";
+            else if (clean.includes('CONJUNCTION')) topicName = "Liên Từ & Trạng Từ Nối";
+            else if (clean.includes('GERUND')) topicName = "Danh Động Từ & Động Từ Nguyên Mẫu";
+            else if (clean.includes('PASSIVE')) topicName = "Câu Chủ Động & Bị Động";
+            else if (clean.includes('PREPOSITION')) topicName = "Giới Từ";
+            else if (clean.includes('RELATIVE')) topicName = "Mệnh Đề Quan Hệ";
+            else if (clean.includes('WORDTYPE') || clean.includes('NOUN') || clean.includes('VERB')) topicName = "Từ Loại (Danh Từ & Động Từ)";
+
+            return {
+                title: `Chuyên Đề ${topicName}${testNum ? ' - Đề ' + testNum : ''}`,
+                badge: '📚'
+            };
         }
-    }
-
-    // Lọc danh sách exam_id duy nhất
-    const uniqueExams = [];
-    const map = new Map();
-    
-    for (const item of allData) {
-        if (item.exam_id && !map.has(item.exam_id)) {
-            map.set(item.exam_id, true);
-            uniqueExams.push({
-                course_code: item.course_code,
-                exam_id: item.exam_id
-            });
-        }
-    }
-
-    // Sắp xếp đề thi theo thứ tự tự nhiên (Đề 1, Đề 2, Đề 3...)
-    uniqueExams.sort((a, b) => a.exam_id.localeCompare(b.exam_id, undefined, { numeric: true, sensitivity: 'base' }));
-
-    allExamsList = uniqueExams;
-
-    console.log("👉 ĐÃ LẤY TOÀN BỘ MÃ ĐỀ KHÔNG BỊ GIỚI HẠN (TỔNG SỐ ĐỀ):", allExamsList.length, allExamsList);
-
-    document.getElementById('examsListContainer').classList.remove('hidden');
-    document.getElementById('listLoader').classList.add('hidden');
-    
-    switchPartTab('ALL');
-}
 
         function switchPartTab(partKey) {
             document.querySelectorAll('.part-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -356,10 +350,9 @@
             let filtered = allExamsList;
             
             if (partKey === 'GRAMMAR') {
-                // Lọc các đề Chuyên đề (Ví dụ: DaiTu, GioiTu, TinhTu, Thi... hoặc không chứa chữ PART)
                 filtered = allExamsList.filter(e => {
                     const upper = e.exam_id.toUpperCase();
-                    return !upper.startsWith('PART') || upper.includes('DAITU') || upper.includes('GIOITU') || upper.includes('TINHTU') || upper.includes('GRAMMAR');
+                    return !upper.startsWith('PART') || upper.includes('GRAMMAR') || upper.includes('CONDITION') || upper.includes('PREPOSITION') || upper.includes('PASSIVE') || upper.includes('GERUND') || upper.includes('RELATIVE') || upper.includes('ADJ') || upper.includes('AGREEMENT');
                 });
             } else if (partKey !== 'ALL') {
                 filtered = allExamsList.filter(e => e.exam_id.toUpperCase().startsWith(partKey));
@@ -368,29 +361,16 @@
             filtered.sort((a, b) => a.exam_id.localeCompare(b.exam_id, undefined, {numeric: true}));
 
             let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${filtered.map(item => {
-                const match = item.exam_id.match(/PART(\d+)_TEST_(\d+)/i);
-                const partNum = match ? match[1] : '';
-                const testNum = match ? match[2] : '';
-                
-                let displayName = item.exam_id;
-                let badgeText = `P${partNum || '?'}`;
-                
-                if (partNum) {
-                    displayName = `TOEIC Part ${partNum} - Đề ${testNum}`;
-                } else {
-                    // Đổi tên đẹp mắt cho các đề chuyên đề ngữ pháp
-                    displayName = item.exam_id.replace(/_/g, ' ');
-                    badgeText = '📚';
-                }
+                const info = formatExamTitle(item.exam_id);
 
                 return `
-                    <div onclick="openExam('${item.course_code}', '${item.exam_id}', '${displayName}')" 
+                    <div onclick="openExam('${item.course_code}', '${item.exam_id}', '${info.title}')" 
                          class="flex items-center justify-between p-3.5 bg-gray-50 hover:bg-blue-50 border rounded-xl cursor-pointer transition-all">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">${badgeText}</div>
+                            <div class="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">${info.badge}</div>
                             <div>
-                                <h4 class="font-bold text-gray-800 text-sm">${displayName}</h4>
-                                <span class="text-xs text-gray-400">Mã đề: ${item.exam_id}</span>
+                                <h4 class="font-bold text-gray-800 text-sm">${info.title}</h4>
+                                <span class="text-xs text-gray-400">Mã hệ thống: ${item.exam_id}</span>
                             </div>
                         </div>
                         <span class="text-xs font-bold text-blue-600 bg-white border px-3 py-1.5 rounded-lg">Vào thi ➔</span>
@@ -409,6 +389,8 @@
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('examView').classList.remove('hidden');
             document.getElementById('examHeaderTitle').innerText = displayName;
+
+            currentExamId = examId;
 
             const { data: questions } = await _supabase
                 .from('exam_questions')
@@ -438,7 +420,7 @@
 
                 startTimer();
                 renderPalette();
-                loadQuestion(0);
+                loadQuestionGroup(0);
             }
         }
 
@@ -463,146 +445,209 @@
             }, 1000);
         }
 
-        function updateAudioPlayer(q) {
+        /* HÀM CẮT NHÓM CÂU HỎI THEO BẠN MÔ TẢ CHUẨN XÁC KHO ĐỀ */
+        function getGroupIndices(targetIndex) {
+            const currentQ = currentQuestionsData[targetIndex];
+            if (!currentQ) return [targetIndex];
+
+            const examUpper = (currentExamId || '').toUpperCase();
+            
+            // Nếu là Part 1, Part 2, Part 5 hoặc Ngữ Pháp -> Cố định 1 câu / 1 trang
+            if (examUpper.includes('PART1') || examUpper.includes('PART2') || examUpper.includes('PART5') || examUpper.includes('GRAMMAR')) {
+                return [targetIndex];
+            }
+
+            // Nếu là Part 3, Part 4, Part 6, Part 7 -> Gom cố định CHUẨN 3 CÂU KẾ TIẾP / 1 TRANG
+            const blockIndex = Math.floor(targetIndex / 3);
+            const startIdx = blockIndex * 3;
+            const endIdx = Math.min(startIdx + 3, currentQuestionsData.length);
+
+            let groupIndices = [];
+            for (let i = startIdx; i < endIdx; i++) {
+                groupIndices.push(i);
+            }
+
+            return groupIndices;
+        }
+
+        /* HÀM QUẢN LÝ PHÁT AUDIO THEO QUY TẮC CỦA BẠN */
+        function updateAudioPlayer(groupQuestions) {
             const audioBox = document.getElementById('audioStickyBox');
             const player = document.getElementById('globalAudioPlayer');
             const audioTitle = document.getElementById('audioTitleDisplay');
 
-            let rawUrl = (q.audio_url || '').split('?')[0].trim();
+            const firstQ = groupQuestions[0];
+            const examUpper = (currentExamId || '').toUpperCase();
+            let rawUrl = (firstQ.audio_url || '').split('?')[0].trim();
 
             if (!rawUrl) {
                 audioBox.classList.add('hidden');
+                player.pause();
                 return;
             }
 
             audioBox.classList.remove('hidden');
 
-            const allAudios = currentQuestionsData.map(item => (item.audio_url || '').split('?')[0].trim()).filter(Boolean);
-            const uniqueAudios = [...new Set(allAudios)];
+            const minQ = firstQ.question_num;
+            const maxQ = groupQuestions[groupQuestions.length - 1].question_num;
 
-            if (uniqueAudios.length > 1) {
-                audioTitle.innerHTML = `<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full mr-1"><i class="fa-solid fa-volume-high"></i> Audio Riêng</span> Audio cho Câu ${q.question_num}`;
+            // KIỂM TRA QUY TẮC PHÁT AUDIO
+            const isFullExamAudio = examUpper.includes('PART4') || 
+                                   (examUpper.includes('PART1') && !examUpper.includes('TEST_01') && !examUpper.includes('TEST_02') && !examUpper.includes('TEST_03') && !examUpper.includes('TEST_04') && !examUpper.includes('TEST_05')) ||
+                                   (examUpper.includes('PART2') && (examUpper.includes('TEST_06') || examUpper.includes('TEST_07') || examUpper.includes('TEST_08') || examUpper.includes('TEST_09') || examUpper.includes('TEST_10')));
+
+            if (isFullExamAudio) {
+                // Audio dùng chung cho toàn đề (Ví dụ Part 4): Chỉ load 1 lần duy nhất, không tự tua lại khi sang trang mới
+                audioTitle.innerHTML = `<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full mr-1"><i class="fa-solid fa-compact-disc"></i> Audio Toàn Bài Thi</span> Đang xem Câu ${minQ}${groupQuestions.length > 1 ? ' - ' + maxQ : ''}`;
+                
+                if (player.src !== rawUrl) {
+                    player.src = rawUrl;
+                    player.load();
+                    player.play().catch(e => {});
+                }
+            } else if (groupQuestions.length > 1 || examUpper.includes('PART3')) {
+                // Part 3: Audio riêng cho từng cụm 3 câu (41-43, 44-46...)
+                audioTitle.innerHTML = `<span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full mr-1"><i class="fa-solid fa-volume-high"></i> Audio Bài Nghe</span> Phát cho Câu ${minQ} - ${maxQ}`;
+                
+                if (player.src !== rawUrl) {
+                    player.src = rawUrl;
+                    player.load();
+                    player.play().catch(e => {});
+                }
             } else {
-                const minQ = Math.min(...currentQuestionsData.map(item => item.question_num));
-                const maxQ = Math.max(...currentQuestionsData.map(item => item.question_num));
-                audioTitle.innerHTML = `<span class="bg-purple-100 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full mr-1"><i class="fa-solid fa-compact-disc"></i> Audio Toàn Đề</span> Phát liên tục (Câu ${minQ} - ${maxQ})`;
-            }
-
-            if (player.src !== rawUrl) {
-                player.src = rawUrl;
-                player.load();
-                player.play().catch(e => {});
+                // Part 1 (Đề 1-5), Part 2 (Đề 2-4): Audio riêng từng câu
+                audioTitle.innerHTML = `<span class="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-1 rounded-full mr-1"><i class="fa-solid fa-headphones"></i> Audio Câu ${minQ}</span>`;
+                
+                if (player.src !== rawUrl) {
+                    player.src = rawUrl;
+                    player.load();
+                    player.play().catch(e => {});
+                }
             }
         }
 
-        function loadQuestion(index) {
+        function loadQuestionGroup(index) {
             currentIndex = index;
-            const q = currentQuestionsData[index];
+            const groupIndices = getGroupIndices(index);
+            const groupQuestions = groupIndices.map(i => currentQuestionsData[i]);
 
-            document.getElementById('currentQuestionNumDisplay').innerText = `Câu ${q.question_num}`;
-            updateAudioPlayer(q);
+            updateAudioPlayer(groupQuestions);
 
-            // Xử lý Khung Bài Đọc (Part 6, Part 7)
             const passageBox = document.getElementById('passageBox');
-            if (q.passage_html && q.passage_html.trim() !== '') {
+            const firstPassage = (groupQuestions[0].passage_html || '').trim();
+
+            if (firstPassage !== '') {
                 passageBox.classList.remove('hidden');
-                document.getElementById('passageContent').innerHTML = q.passage_html;
+                document.getElementById('passageContent').innerHTML = firstPassage;
             } else {
                 passageBox.classList.add('hidden');
             }
 
-            const examIdUpper = (q.exam_id || '').toUpperCase();
-            const isPart1 = examIdUpper.includes('PART1');
-            const isPart2 = examIdUpper.includes('PART2');
+            let groupHTML = '';
+            groupQuestions.forEach(q => {
+                const qNum = q.question_num;
+                const examIdUpper = (q.exam_id || '').toUpperCase();
+                const isPart1 = examIdUpper.includes('PART1');
+                const isPart2 = examIdUpper.includes('PART2');
 
-            // Xử lý Text Câu hỏi
-            const qTextEl = document.getElementById('questionTextNotice');
-            if (q.question_text && !isPart1 && !isPart2) {
-                qTextEl.innerText = q.question_text;
-                qTextEl.classList.remove('hidden');
-            } else {
-                qTextEl.classList.add('hidden');
-            }
+                const isFlagged = !!flaggedQuestions[qNum];
+                const flagClass = isFlagged ? 'text-yellow-700 bg-yellow-100 border-yellow-300' : 'text-gray-500 bg-gray-100';
 
-            // Xử lý Ảnh Part 1
-            const imgBox = document.getElementById('questionImgBox');
-            if (q.image_url) {
-                imgBox.classList.remove('hidden');
-                document.getElementById('questionImg').src = q.image_url;
-            } else {
-                imgBox.classList.add('hidden');
-            }
+                let opts = q.options;
+                if (typeof opts === 'string') {
+                    try { opts = JSON.parse(opts); } catch(e) {}
+                }
 
-            document.getElementById('part2Notice').className = isPart2 ? 'text-gray-500 italic text-sm mb-4 bg-gray-50 p-3 rounded-xl border text-center font-medium' : 'hidden';
+                let optionList = [];
+                if (Array.isArray(opts)) {
+                    optionList = opts.map(item => {
+                        const str = String(item).trim();
+                        const key = str.charAt(0) === '(' ? str.charAt(1) : str.charAt(0);
+                        return { key: key.toUpperCase(), label: str };
+                    });
+                } else if (typeof opts === 'object' && opts !== null) {
+                    optionList = Object.entries(opts).map(([k, v]) => ({
+                        key: String(k).trim().toUpperCase(),
+                        label: String(v).trim()
+                    }));
+                }
 
-            // Xử lý Danh sách Lựa chọn A, B, C, D
-            let opts = q.options;
-            if (typeof opts === 'string') {
-                try { opts = JSON.parse(opts); } catch(e) {}
-            }
+                const correctOpt = isSubmitted ? (q.correct_option || '').trim().toUpperCase() : null;
+                const userOptSelected = (userAnswers[qNum] || '').trim().toUpperCase();
 
-            let optionsHTML = '';
-            const correctOpt = isSubmitted ? (q.correct_option || '').trim().toUpperCase() : null;
-            const userOptSelected = (userAnswers[q.question_num] || '').trim().toUpperCase();
+                let optionsHTML = '';
+                optionList.forEach(opt => {
+                    const optKeyUpper = opt.key;
+                    const isSelected = userOptSelected === optKeyUpper;
 
-            let optionList = [];
-            if (Array.isArray(opts)) {
-                optionList = opts.map(item => {
-                    const str = String(item).trim();
-                    const key = str.charAt(0) === '(' ? str.charAt(1) : str.charAt(0);
-                    return { key: key.toUpperCase(), label: str };
+                    let borderStyle = isSelected ? 'border-blue-600 bg-blue-50 text-blue-900 font-bold' : 'border-gray-200 bg-white hover:bg-gray-50';
+                    
+                    if (isSubmitted) {
+                        if (optKeyUpper === correctOpt) {
+                            borderStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold'; 
+                        } else if (isSelected && optKeyUpper !== correctOpt) {
+                            borderStyle = 'border-red-500 bg-red-50 text-red-900 font-bold'; 
+                        }
+                    }
+
+                    optionsHTML += `
+                        <label onclick="selectAnswer(${qNum}, '${optKeyUpper}')" 
+                               class="flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all ${borderStyle}">
+                            <input type="radio" name="q_opt_${qNum}" value="${optKeyUpper}" ${isSelected ? 'checked' : ''} ${isSubmitted ? 'disabled' : ''} class="hidden">
+                            <span class="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center mr-3 font-bold text-xs ${isSelected || (isSubmitted && optKeyUpper === correctOpt) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100'}">${optKeyUpper}</span>
+                            <span class="text-sm font-semibold">${opt.label}</span>
+                        </label>
+                    `;
                 });
-            } else if (typeof opts === 'object' && opts !== null) {
-                optionList = Object.entries(opts).map(([k, v]) => ({
-                    key: String(k).trim().toUpperCase(),
-                    label: String(v).trim()
-                }));
-            }
 
-            optionList.forEach(opt => {
-                const optKeyUpper = opt.key;
-                const isSelected = userOptSelected === optKeyUpper;
-
-                let borderStyle = isSelected ? 'border-blue-600 bg-blue-50 text-blue-900 font-bold' : 'border-gray-200 bg-white hover:bg-gray-50';
-                
+                let expHTML = '';
                 if (isSubmitted) {
-                    if (optKeyUpper === correctOpt) {
-                        borderStyle = 'border-emerald-500 bg-emerald-50 text-emerald-900 font-bold'; 
-                    } else if (isSelected && optKeyUpper !== correctOpt) {
-                        borderStyle = 'border-red-500 bg-red-50 text-red-900 font-bold'; 
+                    let content = q.explanation || 'Chưa có giải thích chi tiết cho câu hỏi này.';
+                    if (typeof content === 'string' && content.trim().toLowerCase().startsWith('http')) {
+                        expHTML = `<div class="mt-4 p-4 rounded-xl border bg-blue-50/80 border-blue-200">
+                            <p class="font-bold mb-2 text-blue-900 text-sm flex items-center gap-2"><i class="fa-solid fa-circle-info text-blue-600"></i> Transcript & Giải Thích Chi Tiết:</p>
+                            <img src="${content.trim()}" class="max-w-full rounded-lg border mx-auto pointer-events-none" alt="Giải thích">
+                        </div>`;
+                    } else {
+                        const textHTML = String(content).replace(/\n/g, '<br>');
+                        expHTML = `<div class="mt-4 p-4 rounded-xl border bg-blue-50/80 border-blue-200">
+                            <p class="font-bold mb-2 text-blue-900 text-sm flex items-center gap-2"><i class="fa-solid fa-circle-info text-blue-600"></i> Transcript & Giải Thích Chi Tiết:</p>
+                            <div class="text-sm text-gray-800 leading-relaxed font-medium">${textHTML}</div>
+                        </div>`;
                     }
                 }
 
-                optionsHTML += `
-                    <label onclick="selectAnswer(${q.question_num}, '${optKeyUpper}')" 
-                           class="flex items-center p-3.5 border-2 rounded-xl cursor-pointer transition-all ${borderStyle}">
-                        <input type="radio" name="current_q_opt" value="${optKeyUpper}" ${isSelected ? 'checked' : ''} ${isSubmitted ? 'disabled' : ''} class="hidden">
-                        <span class="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center mr-3 font-bold text-xs ${isSelected || (isSubmitted && optKeyUpper === correctOpt) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100'}">${optKeyUpper}</span>
-                        <span class="text-sm font-semibold">${opt.label}</span>
-                    </label>
+                groupHTML += `
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 relative mb-4">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                            <span class="font-black text-xl text-blue-600">Câu ${qNum}</span>
+                            <button type="button" onclick="toggleFlagQuestion(${qNum})" class="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg transition-all border ${flagClass}">
+                                <i class="fa-solid fa-bookmark"></i> <span>Đánh dấu</span>
+                            </button>
+                        </div>
+
+                        ${(q.question_text && !isPart1 && !isPart2) ? `<p class="text-base font-semibold text-gray-800 mb-4">${q.question_text}</p>` : ''}
+                        
+                        ${q.image_url ? `<div class="mb-4 text-center"><img src="${q.image_url}" class="max-w-full max-h-80 rounded-xl border mx-auto shadow-sm pointer-events-none" alt="Hình ảnh"></div>` : ''}
+
+                        ${isPart2 ? `<div class="text-gray-500 italic text-sm mb-4 bg-gray-50 p-3 rounded-xl border text-center font-medium">Mark your answer on your answer sheet (Nghe câu hỏi & chọn đáp án A, B hoặc C)</div>` : ''}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${optionsHTML}
+                        </div>
+
+                        ${expHTML}
+                    </div>
                 `;
             });
 
-            document.getElementById('optionsContainer').innerHTML = optionsHTML;
-            updateFlagBtnState(q.question_num);
+            document.getElementById('questionsGroupContainer').innerHTML = groupHTML;
 
-            document.getElementById('prevBtn').disabled = index === 0;
-            document.getElementById('nextBtn').innerText = index === currentQuestionsData.length - 1 ? 'Nộp Bài Thi' : 'Câu tiếp ➔';
+            const firstGroupIdx = groupIndices[0];
+            const lastGroupIdx = groupIndices[groupIndices.length - 1];
 
-            const expBox = document.getElementById('explanationBox');
-            if (isSubmitted) {
-                expBox.classList.remove('hidden');
-                let content = q.explanation || 'Chưa có giải thích chi tiết cho câu hỏi này.';
-                
-                if (typeof content === 'string' && content.trim().toLowerCase().startsWith('http')) {
-                    document.getElementById('expContent').innerHTML = `<img src="${content.trim()}" class="max-w-full rounded-lg border mx-auto pointer-events-none" alt="Giải thích">`;
-                } else {
-                    const textHTML = String(content).replace(/\n/g, '<br>');
-                    document.getElementById('expContent').innerHTML = `<div class="text-sm text-gray-800 leading-relaxed font-medium">${textHTML}</div>`;
-                }
-            } else {
-                expBox.classList.add('hidden');
-            }
+            document.getElementById('prevBtn').disabled = firstGroupIdx === 0;
+            document.getElementById('nextBtn').innerText = lastGroupIdx === currentQuestionsData.length - 1 ? 'Nộp Bài Thi' : 'Trang tiếp ➔';
 
             renderPalette();
         }
@@ -610,23 +655,12 @@
         function selectAnswer(qNum, optKey) {
             if (isSubmitted) return;
             userAnswers[qNum] = optKey;
-            loadQuestion(currentIndex);
-            updateProgress();
+            loadQuestionGroup(currentIndex);
         }
 
-        function toggleFlagCurrentQuestion() {
-            const qNum = currentQuestionsData[currentIndex].question_num;
+        function toggleFlagQuestion(qNum) {
             flaggedQuestions[qNum] = !flaggedQuestions[qNum];
-            updateFlagBtnState(qNum);
-            renderPalette();
-        }
-
-        function updateFlagBtnState(qNum) {
-            const isFlagged = flaggedQuestions[qNum];
-            const btn = document.getElementById('flagBtn');
-            btn.className = isFlagged 
-                ? 'flex items-center gap-1.5 text-xs font-bold text-yellow-700 bg-yellow-100 px-3 py-1.5 rounded-lg border border-yellow-300'
-                : 'flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-yellow-600 bg-gray-100 hover:bg-yellow-50 px-3 py-1.5 rounded-lg border';
+            loadQuestionGroup(currentIndex);
         }
 
         function setPaletteFilter(filter) {
@@ -638,9 +672,11 @@
 
         function renderPalette() {
             let html = '';
+            const currentGroupIndices = getGroupIndices(currentIndex);
+
             currentQuestionsData.forEach((q, idx) => {
                 const qNum = q.question_num; 
-                const isCurrent = idx === currentIndex;
+                const isCurrentInGroup = currentGroupIndices.includes(idx);
                 const isAnswered = !!userAnswers[qNum];
                 const isFlagged = !!flaggedQuestions[qNum];
 
@@ -660,9 +696,9 @@
                     else if (isAnswered) stateClass = 'answered';
                 }
 
-                if (isCurrent) stateClass += ' current';
+                if (isCurrentInGroup) stateClass += ' current';
 
-                html += `<div onclick="loadQuestion(${idx})" class="q-btn ${stateClass}">${qNum}</div>`;
+                html += `<div onclick="loadQuestionGroup(${idx})" class="q-btn ${stateClass}">${qNum}</div>`;
             });
 
             document.getElementById('questionPalette').innerHTML = html;
@@ -678,9 +714,16 @@
             document.getElementById('progressBar').style.width = `${percent}%`;
         }
 
-        function prevQuestion() { if (currentIndex > 0) loadQuestion(currentIndex - 1); }
+        function prevQuestion() {
+            const currentGroupIndices = getGroupIndices(currentIndex);
+            const firstIdx = currentGroupIndices[0];
+            if (firstIdx > 0) loadQuestionGroup(firstIdx - 1);
+        }
+
         function nextQuestion() {
-            if (currentIndex < currentQuestionsData.length - 1) loadQuestion(currentIndex + 1);
+            const currentGroupIndices = getGroupIndices(currentIndex);
+            const lastIdx = currentGroupIndices[currentGroupIndices.length - 1];
+            if (lastIdx < currentQuestionsData.length - 1) loadQuestionGroup(lastIdx + 1);
             else confirmSubmitExam();
         }
 
@@ -728,7 +771,7 @@
             document.getElementById('filterReviewButtons').classList.remove('hidden');
             document.getElementById('paletteLegend').classList.add('hidden');
 
-            loadQuestion(currentIndex);
+            loadQuestionGroup(currentIndex);
         }
 
         function enableAntiCheat() {

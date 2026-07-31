@@ -2,7 +2,7 @@
 <html lang="vi" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TaiLieuHub - Hệ Thống Thi Trắc Nghiệm Online</title>
     <!-- FontAwesome & Tailwind CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -32,6 +32,7 @@
             color: var(--text-main);
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             transition: background-color 0.3s, color 0.3s;
+            touch-action: manipulation;
         }
 
         /* Apple Liquid Navbar */
@@ -41,7 +42,7 @@
             padding: 12px;
             position: sticky;
             top: 0;
-            z-index: 50;
+            z-index: 40;
         }
 
         .liquid-nav {
@@ -238,7 +239,6 @@
     <!-- Header Apple Liquid Navbar -->
     <div class="liquid-nav-container">
         <nav class="liquid-nav">
-            <!-- NÚT ĐIỀU HƯỚNG QUAY VỀ TRANG CHỦ TÀI LIỆU -->
             <a href="https://congiobachmai-prog.github.io/TaiLieuHub2026/index.html" class="nav-btn" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white !important;">
                 <i class="fa-solid fa-house"></i>
                 <span>Trang Chủ Tài Liệu</span>
@@ -272,7 +272,7 @@
         </nav>
     </div>
 
-    <!-- Hero Banner Kính Mờ Public -->
+    <!-- Hero Banner Public -->
     <section class="hero">
         <h1>Nền Tảng Thi Trắc Nghiệm TOEIC Online</h1>
         <p>Ngân hàng đề thi thử TOEIC Nghe - Đọc Cô Mai Phương có âm thanh chất lượng cao, chấm điểm & giải thích chi tiết.</p>
@@ -387,10 +387,35 @@
         </div>
     </footer>
 
-    <!-- JavaScript Logic Đăng Nhập & Lọc Khóa Học -->
+    <!-- JavaScript Logic Đăng Nhập Xử Lý Không Đơ iOS -->
     <script>
         const SECRET_KEY = "TLH_SECURE_2026_@KEY";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzgzMKRRr5WCAmFKzUeIJCfAWdjryLkToD9htOcrH0OuJon_R1-IZSjF1NAhW6bDGqIHg/exec";
+
+        // BỌC TRÁNH CRASH TRÊN IOS SAFARI KHI LƯU DỮ LIỆU
+        const SafeStorage = {
+            memoryStore: {},
+            setItem(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    this.memoryStore[key] = value;
+                }
+            },
+            getItem(key) {
+                try {
+                    return localStorage.getItem(key) || this.memoryStore[key] || null;
+                } catch (e) {
+                    return this.memoryStore[key] || null;
+                }
+            },
+            clear() {
+                try {
+                    localStorage.clear();
+                } catch (e) {}
+                this.memoryStore = {};
+            }
+        };
 
         const VALID_EXAM_COURSES = {
             'all': { name: '👑 TOEIC NGHE - ĐỌC (LISTENING & READING) - CÔ MAI PHƯƠNG', url: './toeic.html' },
@@ -407,7 +432,7 @@
             initThemeToggle();
 
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('action') === 'login' && !localStorage.getItem("userEmail")) {
+            if (urlParams.get('action') === 'login' && !SafeStorage.getItem("userEmail")) {
                 openAuthModal('login');
             }
         });
@@ -416,12 +441,12 @@
             try {
                 let jsonStr = JSON.stringify(coursesArray);
                 let encoded = btoa(encodeURIComponent(jsonStr + "|" + SECRET_KEY));
-                localStorage.setItem("allowedCourses", encoded);
+                SafeStorage.setItem("allowedCourses", encoded);
             } catch(e) {}
         }
 
         function getSecureCourses() {
-            let raw = localStorage.getItem("allowedCourses");
+            let raw = SafeStorage.getItem("allowedCourses");
             if (!raw) return [];
             try {
                 let decoded = decodeURIComponent(atob(raw));
@@ -435,7 +460,7 @@
         }
 
         function checkUserAuthStatus() {
-            let userEmail = localStorage.getItem("userEmail");
+            let userEmail = SafeStorage.getItem("userEmail");
             let myCoursesArea = document.getElementById("myCoursesArea");
             let myCoursesList = document.getElementById("myCoursesList");
             let authButtonText = document.getElementById("authButtonText");
@@ -487,7 +512,7 @@
 
         function scrollToMyCourses(e) {
             e.preventDefault();
-            let userEmail = localStorage.getItem("userEmail");
+            let userEmail = SafeStorage.getItem("userEmail");
             if (!userEmail) {
                 alert("Vui lòng Đăng Nhập tài khoản để xem khóa thi đã mua!");
                 openAuthModal('login');
@@ -521,34 +546,72 @@
             }
         }
 
-        function handleAuthSubmit(e) {
+        /* HÀM AUTHENTICATE MỚI HOÀN TOÀN KHÔNG BỊ CHẶN COOKIE / ĐƠ MÁY TRÊN IOS */
+        async function handleAuthSubmit(e) {
             e.preventDefault();
             let email = document.getElementById("authEmail").value.trim().toLowerCase();
             let password = document.getElementById("authPassword").value.trim();
             let msg = document.getElementById("authMsg");
+            let btn = document.getElementById("btnAuthSubmit");
+
+            if (!email || !password) return;
 
             msg.style.color = "var(--primary)";
-            msg.innerText = "Đang kiểm tra...";
+            msg.innerText = "Đang kiểm tra bảo mật...";
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
 
             const newDeviceSessionId = 'SESSION_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
             const callbackName = 'handleAuth_' + Date.now();
+            const requestUrl = `${SCRIPT_URL}?action=${currentAuthMode}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=${callbackName}`;
 
-            window[callbackName] = function(result) {
-                document.getElementById(callbackName)?.remove();
-                delete window[callbackName];
+            const jsonpPromise = new Promise((resolve, reject) => {
+                const timer = setTimeout(() => {
+                    cleanUp();
+                    reject(new Error("Timeout"));
+                }, 10000);
+
+                function cleanUp() {
+                    clearTimeout(timer);
+                    delete window[callbackName];
+                    const scriptEl = document.getElementById(callbackName);
+                    if (scriptEl) scriptEl.remove();
+                }
+
+                window[callbackName] = function(data) {
+                    cleanUp();
+                    resolve(data);
+                };
+
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = requestUrl;
+                script.onerror = () => {
+                    cleanUp();
+                    reject(new Error("NetworkError"));
+                };
+                
+                document.body.appendChild(script);
+            });
+
+            try {
+                const result = await jsonpPromise;
+                btn.disabled = false;
+                btn.style.opacity = "1";
 
                 if (result.status === "success") {
                     msg.style.color = "#16a34a";
                     msg.innerText = result.message || "Thành công!";
 
                     if (currentAuthMode === 'login') {
-                        localStorage.setItem("userEmail", result.email);
-                        localStorage.setItem("currentSessionId", newDeviceSessionId);
+                        SafeStorage.setItem("userEmail", result.email);
+                        SafeStorage.setItem("currentSessionId", newDeviceSessionId);
                         setSecureCourses(result.allowedCourses);
+                        
                         setTimeout(() => {
                             closeAuthModal();
                             checkUserAuthStatus();
-                        }, 800);
+                        }, 400);
                     } else {
                         alert("Tạo tài khoản thành công! Bạn có thể Đăng Nhập ngay bây giờ.");
                         switchAuthMode('login');
@@ -557,16 +620,20 @@
                     msg.style.color = "#dc2626";
                     msg.innerText = result.message || "Email hoặc Mật khẩu chưa đúng!";
                 }
-            };
-
-            const script = document.createElement('script');
-            script.id = callbackName;
-            script.src = `${SCRIPT_URL}?action=${currentAuthMode}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=${callbackName}`;
-            document.body.appendChild(script);
+            } catch (err) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                msg.style.color = "#dc2626";
+                if (err.message === "Timeout") {
+                    msg.innerText = "⚠️ Kết nối quá thời gian. Vui lòng thử lại!";
+                } else {
+                    msg.innerText = "⚠️ Không thể kết nối máy chủ. Vui lòng kiểm tra lại mạng!";
+                }
+            }
         }
 
         function logout() {
-            localStorage.clear();
+            SafeStorage.clear();
             alert("Đã đăng xuất tài khoản!");
             checkUserAuthStatus();
         }
